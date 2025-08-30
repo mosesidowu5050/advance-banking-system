@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.bankService;
 
 import com.apostle.data.model.AccountType;
 import com.apostle.data.model.BankAccount;

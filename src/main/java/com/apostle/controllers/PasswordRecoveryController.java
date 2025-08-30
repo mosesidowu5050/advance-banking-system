@@ -3,10 +3,9 @@ package com.apostle.controllers;
 
 import com.apostle.dtos.requests.ForgotPasswordRequest;
 import com.apostle.dtos.requests.ResetPasswordRequest;
-import com.apostle.services.PasswordRecoveryService;
+import com.apostle.services.passwordService.PasswordRecoveryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

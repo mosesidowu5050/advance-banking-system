@@ -7,7 +7,7 @@ import com.apostle.dtos.responses.TransactionResponse;
 import com.apostle.exceptions.InsufficientBalanceException;
 import com.apostle.exceptions.TransactionNotFoundException;
 import com.apostle.exceptions.UserNotFoundException;
-import com.apostle.services.TransactionService;
+import com.apostle.services.transactionService.TransactionService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

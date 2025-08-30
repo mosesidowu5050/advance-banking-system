@@ -4,7 +4,7 @@ import com.apostle.dtos.requests.AddAccountRequest;
 import com.apostle.dtos.responses.ApiResponse;
 import com.apostle.dtos.responses.BalanceResponse;
 import com.apostle.exceptions.UserNotFoundException;
-import com.apostle.services.BankAccountService;
+import com.apostle.services.bankService.BankAccountService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

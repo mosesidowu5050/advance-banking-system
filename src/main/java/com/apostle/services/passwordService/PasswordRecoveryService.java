@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.passwordService;
 
 import com.apostle.dtos.requests.ForgotPasswordRequest;
 import com.apostle.dtos.requests.ResetPasswordRequest;

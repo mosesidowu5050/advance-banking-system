@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.passwordService;
 
 import com.apostle.data.model.PasswordResetToken;
 import com.apostle.data.model.User;
@@ -9,6 +9,7 @@ import com.apostle.dtos.requests.ResetPasswordRequest;
 import com.apostle.dtos.responses.ResetPasswordResponse;
 import com.apostle.exceptions.InvalidResetTokenException;
 import com.apostle.exceptions.UserNotFoundException;
+import com.apostle.services.emailService.EmailServiceImpl;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

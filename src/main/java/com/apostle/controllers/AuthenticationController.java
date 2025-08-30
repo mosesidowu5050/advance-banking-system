@@ -2,9 +2,9 @@ package com.apostle.controllers;
 
 import com.apostle.dtos.requests.LoginRequest;
 import com.apostle.dtos.requests.RegisterRequest;
-import com.apostle.services.AuthenticationService;
-import com.apostle.services.JwtService;
-import com.apostle.services.RedisService;
+import com.apostle.services.authService.AuthenticationService;
+import com.apostle.services.jwtService.JwtService;
+import com.apostle.services.redisService.RedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

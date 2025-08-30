@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.transactionService;
 
 import com.apostle.data.model.BankAccount;
 import com.apostle.data.model.Transaction;
@@ -9,6 +9,7 @@ import com.apostle.dtos.requests.DepositRequest;
 import com.apostle.dtos.requests.SendMoneyRequest;
 import com.apostle.dtos.responses.TransactionResponse;
 import com.apostle.exceptions.TransactionNotFoundException;
+import com.apostle.services.bankService.BankAccountService;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.data.domain.PageRequest;

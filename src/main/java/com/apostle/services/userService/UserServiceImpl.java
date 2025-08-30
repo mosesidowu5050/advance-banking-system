@@ -1,8 +1,9 @@
-package com.apostle.services;
+package com.apostle.services.userService;
 
 import com.apostle.data.model.User;
 import com.apostle.data.repositories.UserRepository;
 import com.apostle.exceptions.UserNotFoundException;
+import com.apostle.services.cloudinaryService.CloudinaryService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

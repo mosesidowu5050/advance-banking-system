@@ -1,7 +1,8 @@
-package com.apostle.services;
+package com.apostle.services.jwtService;
 
 
 import com.apostle.data.model.Role;
+import com.apostle.services.redisService.TokenBlacklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

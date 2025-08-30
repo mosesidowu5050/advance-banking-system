@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.authService;
 
 import com.apostle.data.model.AccountType;
 import com.apostle.data.model.BankAccount;
@@ -11,6 +11,9 @@ import com.apostle.dtos.responses.RegisterResponses;
 import com.apostle.exceptions.EmailNotSentException;
 import com.apostle.exceptions.InvalidLoginException;
 import com.apostle.exceptions.UserAlreadyExistException;
+import com.apostle.services.bankService.BankAccountServiceImpl;
+import com.apostle.services.emailService.EmailServiceImpl;
+import com.apostle.services.jwtService.JwtService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;

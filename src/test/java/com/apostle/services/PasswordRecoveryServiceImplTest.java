@@ -8,6 +8,8 @@ import com.apostle.dtos.requests.RegisterRequest;
 import com.apostle.dtos.requests.ResetPasswordRequest;
 import com.apostle.dtos.responses.ResetPasswordResponse;
 import com.apostle.exceptions.InvalidResetTokenException;
+import com.apostle.services.authService.AuthenticationServiceImpl;
+import com.apostle.services.passwordService.PasswordRecoveryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

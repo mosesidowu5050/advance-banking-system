@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.userService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

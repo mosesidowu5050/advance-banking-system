@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.redisService;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

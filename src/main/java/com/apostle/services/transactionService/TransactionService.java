@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.transactionService;
 
 import com.apostle.dtos.requests.DepositRequest;
 import com.apostle.dtos.requests.SendMoneyRequest;

@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.emailService;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

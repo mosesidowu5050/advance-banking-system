@@ -8,6 +8,7 @@ import com.apostle.dtos.responses.LoginResponse;
 import com.apostle.dtos.responses.RegisterResponses;
 import com.apostle.exceptions.InvalidLoginException;
 import com.apostle.exceptions.UserAlreadyExistException;
+import com.apostle.services.authService.AuthenticationServiceImpl;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

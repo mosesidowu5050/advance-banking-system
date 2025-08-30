@@ -1,6 +1,6 @@
 package com.apostle.controllers;
 
-import com.apostle.services.UserService;
+import com.apostle.services.userService.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
