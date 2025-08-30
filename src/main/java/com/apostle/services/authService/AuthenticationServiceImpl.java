@@ -75,6 +75,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     }
 
+
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         String email = loginRequest.getEmail().toLowerCase();
@@ -83,7 +84,8 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             throw new InvalidLoginException("User with provided credential does not exist");
         }
 
-        boolean passwordMatches = bCryptPasswordEncoder.matches(loginRequest.getPassword(), optionalUser.get().getPassword());
+        boolean passwordMatches = bCryptPasswordEncoder
+                .matches(loginRequest.getPassword(), optionalUser.get().getPassword());
         if (!passwordMatches) {
             throw new InvalidLoginException("Invalid credentials");
         }
@@ -91,6 +93,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         String name = optionalUser.get().getUsername();
         User user = optionalUser.get();
         String token = jwtService.generateJwtToken(optionalUser.get().getEmail(), user.getRole());
-        return new LoginResponse(token, name, "Logged in success", true);
+        return new LoginResponse(token, name, "Log in successful", true);
     }
 }
