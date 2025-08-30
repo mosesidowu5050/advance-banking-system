@@ -53,7 +53,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             throw new UserAlreadyExistException("Email already exists");
         }
 
-
         User user = mapToRegisterRequest(registerRequest);
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         String email = user.getEmail().toLowerCase();

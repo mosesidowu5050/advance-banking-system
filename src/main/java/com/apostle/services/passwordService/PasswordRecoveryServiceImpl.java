@@ -58,7 +58,6 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService{
         passwordResetToken.setExpiration(LocalDateTime.now().plusMinutes(10));
         passwordResetTokenRepository.save(passwordResetToken);
 
-
         try {
             emailService.sendPasswordResetEmail(email, token);
         }catch (MessagingException ex){

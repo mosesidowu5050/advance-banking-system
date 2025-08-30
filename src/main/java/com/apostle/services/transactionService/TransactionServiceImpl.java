@@ -120,15 +120,19 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> transactions = transactionRepo.findTransactionsWithinDateBySenderOrReceiverWithType(
                 accountId, TransactionType.DEBIT, accountId, TransactionType.CREDIT, start, end, pageable);
         return transactions.stream()
-                .map(t -> new TransactionResponse(t.getTransactionReference(), t.getAmount(), t.getType(), t.getStatus(), t.getNote(), t.getTimestamp(), bankService.getAccountByAccountNumber(t.getReceiverAccountNumber()).getName() ) )
+                .map(t -> new TransactionResponse(t.getTransactionReference(), t.getAmount(), t.getType(),
+                        t.getStatus(), t.getNote(), t.getTimestamp(),
+                        bankService.getAccountByAccountNumber(t.getReceiverAccountNumber()).getName() ) )
                 .sorted(Comparator.comparing(TransactionResponse::timeStamp).reversed())
                 .toList();
     }
 
 
     @Override
-    public TransactionResponse getTransactionById(String  transactionId) {
-        Transaction transaction = transactionRepo.findById(transactionId).orElseThrow(() -> new TransactionNotFoundException("Transaction not found"));
+    public TransactionResponse getTransactionById(String reference) {
+        Transaction transaction = transactionRepo.findByTransactionReference(reference)
+                .orElseThrow(() -> new TransactionNotFoundException("Transaction not found"));
+
         return mapToTransactionResponse(transaction);
     }
 

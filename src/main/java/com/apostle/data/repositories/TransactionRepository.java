@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends MongoRepository<Transaction, String> {
@@ -31,4 +32,5 @@ public interface TransactionRepository extends MongoRepository<Transaction, Stri
     );
 
 
+    Optional<Transaction> findByTransactionReference(String transactionReference);
 }

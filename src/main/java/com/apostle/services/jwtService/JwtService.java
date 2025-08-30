@@ -45,7 +45,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-
     public Claims extractAllClaims(String token) {
         if (tokenBlacklistService.isTokenBlacklisted(token)) {
             throw new RuntimeException("Token has been revoked");
