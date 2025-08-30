@@ -3,6 +3,9 @@ package com.apostle.controllers;
 import com.apostle.dtos.requests.LoginRequest;
 import com.apostle.dtos.requests.RegisterRequest;
 import com.apostle.services.AuthenticationService;
+import com.apostle.services.JwtService;
+import com.apostle.services.RedisService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,9 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final JwtService jwtService;
+    private final RedisService redisService;
 
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService, JwtService jwtService, RedisService redisService) {
         this.authenticationService = authenticationService;
+        this.jwtService = jwtService;
+        this.redisService = redisService;
     }
 
     @PostMapping("/register")
@@ -38,6 +45,20 @@ public class AuthenticationController {
         }catch (Exception exception){
             return ResponseEntity.badRequest().body(exception.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            long expiration = jwtService.getExpiration(token); // extract exp from token
+            long now = System.currentTimeMillis() / 1000;
+            long ttl = expiration - now;
+
+            redisService.blacklistToken(token, ttl);
+        }
+        return ResponseEntity.ok("Logged out successfully.");
     }
 
 

@@ -2,11 +2,13 @@ package com.apostle.security;
 
 
 import com.apostle.services.JwtService;
+import com.apostle.services.RedisService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,9 +23,11 @@ import java.util.List;
 public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final RedisService redisService;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, RedisService redisService) {
         this.jwtService = jwtService;
+        this.redisService = redisService;
     }
 
     @Override
@@ -39,6 +43,12 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         String jwtToken = authorizationHeader.substring(7);
 
         try {
+            if (redisService.isTokenBlacklisted(jwtToken)) {
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
             Claims claims = jwtService.extractAllClaims(jwtToken);
             String email = claims.getSubject();
             String role = claims.get("role", String.class);

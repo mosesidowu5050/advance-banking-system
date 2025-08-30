@@ -15,12 +15,18 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+
     @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration}")
     private String expiration;
 
+    private final TokenBlacklistService tokenBlacklistService;
+
+    public JwtService(TokenBlacklistService tokenBlacklistService) {
+        this.tokenBlacklistService = tokenBlacklistService;
+    }
 
     public String generateJwtToken(String email, Role role){
         return Jwts.builder()
@@ -40,19 +46,29 @@ public class JwtService {
 
 
     public Claims extractAllClaims(String token) {
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            throw new RuntimeException("Token has been revoked");
+        }
+
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+
         if (claims.getExpiration().before(new Date())) {
             throw new RuntimeException("Token has expired");
         }
-        
+
         if (!"access".equals(claims.get("type", String.class))) {
             throw new RuntimeException("Invalid token type");
         }
+
         return claims;
     }
 
+    public long getExpiration(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.getExpiration().getTime() / 1000; // return as UNIX timestamp in seconds
+    }
 }
