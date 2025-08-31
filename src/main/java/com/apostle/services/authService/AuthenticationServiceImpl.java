@@ -2,9 +2,7 @@ package com.apostle.services.authService;
 
 import com.apostle.data.model.AccountType;
 import com.apostle.data.model.BankAccount;
-import com.apostle.data.model.RefreshToken;
 import com.apostle.data.model.User;
-import com.apostle.data.repositories.RefreshTokenRepository;
 import com.apostle.data.repositories.UserRepository;
 import com.apostle.dtos.requests.LoginRequest;
 import com.apostle.dtos.requests.RegisterRequest;
@@ -14,11 +12,10 @@ import com.apostle.dtos.responses.RegisterResponses;
 import com.apostle.exceptions.EmailNotSentException;
 import com.apostle.exceptions.InvalidLoginException;
 import com.apostle.exceptions.UserAlreadyExistException;
-import com.apostle.services.RefreshTokenService;
+import com.apostle.services.refreshService.RefreshTokenService;
 import com.apostle.services.bankService.BankAccountServiceImpl;
 import com.apostle.services.emailService.EmailServiceImpl;
 import com.apostle.services.jwtService.JwtService;
-import com.apostle.utils.RefreshTokenGenerator;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -30,8 +27,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 

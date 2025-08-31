@@ -4,7 +4,7 @@ import com.apostle.data.model.Role;
 import com.apostle.dtos.requests.LoginRequest;
 import com.apostle.dtos.requests.RefreshTokenRequest;
 import com.apostle.dtos.requests.RegisterRequest;
-import com.apostle.services.RefreshTokenService;
+import com.apostle.services.refreshService.RefreshTokenService;
 import com.apostle.services.authService.AuthenticationService;
 import com.apostle.services.jwtService.JwtService;
 import com.apostle.services.redisService.RedisService;
@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -60,9 +62,15 @@ public class AuthenticationController {
         if (refreshTokenService.validateRefreshToken(refreshToken)) {
             String userId = refreshTokenService.getUserIdFromRefreshToken(refreshToken);
             Role role = refreshTokenService.getRoleFromRefreshToken(refreshToken);
-            String newAccessToken = jwtService.generateJwtToken(userId, role);
+            refreshTokenService.revokeAllRefreshTokensForUser(userId);
 
-            return ResponseEntity.ok(newAccessToken);
+            String newAccessToken = jwtService.generateJwtToken(userId, role);
+            String newRefreshToken = refreshTokenService.createRefreshToken(userId);
+
+            return ResponseEntity.ok(Map.of(
+                    "accessToken", newAccessToken,
+                    "refreshToken", newRefreshToken
+            ));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
     }
@@ -70,14 +78,20 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            long expiration = jwtService.getExpiration(token); // extract exp from token
+            String accessToken = authHeader.substring(7);
+
+            long expiration = jwtService.getExpiration(accessToken);
             long now = System.currentTimeMillis() / 1000;
             long ttl = expiration - now;
 
-            redisService.blacklistToken(token, ttl);
+            redisService.blacklistToken(accessToken, ttl);
+
+            String userId = jwtService.extractUserId(accessToken);
+            refreshTokenService.revokeAllRefreshTokensForUser(userId);
+
         }
         return ResponseEntity.ok("Logged out successfully.");
     }

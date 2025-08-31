@@ -1,4 +1,4 @@
-package com.apostle.services;
+package com.apostle.services.refreshService;
 
 import com.apostle.data.model.RefreshToken;
 import com.apostle.data.model.Role;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,12 +41,15 @@ public class RefreshTokenService {
         return true;
     }
 
-        public void revokeRefreshToken(String token) {
-            refreshTokenRepository.findByToken(token).ifPresent(checkToken -> {
-                checkToken.setRevoked(true);
-                refreshTokenRepository.save(checkToken);
-            });
-        }
+
+    public void revokeAllRefreshTokensForUser(String userId) {
+                List<RefreshToken> tokens = refreshTokenRepository.findAllByUserId(userId);
+                for (RefreshToken token : tokens) {
+                    token.setRevoked(true);
+                    refreshTokenRepository.save(token);
+                }
+            }
+
 
     public String getUserIdFromRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByToken(refreshToken)

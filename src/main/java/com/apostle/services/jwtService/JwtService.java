@@ -67,4 +67,9 @@ public class JwtService {
         Claims claims = extractAllClaims(token);
         return claims.getExpiration().getTime() / 1000; // return as UNIX timestamp in seconds
     }
+
+    public String extractUserId(String accessToken) {
+        Claims claims = extractAllClaims(accessToken);
+        return claims.getSubject();
+    }
 }
