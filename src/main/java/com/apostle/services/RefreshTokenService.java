@@ -1,10 +1,11 @@
 package com.apostle.services;
 
 import com.apostle.data.model.RefreshToken;
+import com.apostle.data.model.Role;
 import com.apostle.data.repositories.RefreshTokenRepository;
 import com.apostle.utils.RefreshTokenGenerator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,11 +16,15 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
+    @Value("${jwt.refreshExpiration}")
+    private long refreshExpiration;
+
+
     public String createRefreshToken(String userId) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUserId(userId);
         refreshToken.setToken(RefreshTokenGenerator.generateRefreshToken());
-        refreshToken.setExpiryDate(Instant.now().plusSeconds(60L * 60L * 24L * 7L)); // 7 days
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshExpiration)); // 7 days
 
         refreshTokenRepository.save(refreshToken);
         return refreshToken.getToken();
@@ -29,14 +34,28 @@ public class RefreshTokenService {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
 
-        if (refreshToken.isRevoked() || refreshToken.getExpiryDate().isBefore(Instant.now())) {
+        if (refreshToken.isRevoked() || refreshToken.getExpiryDate().isBefore(Instant.now()))
             throw new RuntimeException("Expired or revoked refresh token");
-        }
 
         return true;
     }
 
-    public void revokeUserTokens(String userId) {
-        refreshTokenRepository.deleteByUserId(userId);
+        public void revokeRefreshToken(String token) {
+            refreshTokenRepository.findByToken(token).ifPresent(checkToken -> {
+                checkToken.setRevoked(true);
+                refreshTokenRepository.save(checkToken);
+            });
+        }
+
+    public String getUserIdFromRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByToken(refreshToken)
+                .map(RefreshToken::getUserId)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+    }
+
+    public Role getRoleFromRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByToken(refreshToken)
+                .map(RefreshToken::getRole)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
     }
 }

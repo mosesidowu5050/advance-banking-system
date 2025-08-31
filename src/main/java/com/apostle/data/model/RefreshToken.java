@@ -7,8 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Document(collection = "refresh_tokens")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -20,4 +19,5 @@ public class RefreshToken {
         private String token;
         private Instant expiryDate;
         private boolean revoked = false;
+        private Role role;
 }
