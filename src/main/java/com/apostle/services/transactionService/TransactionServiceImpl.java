@@ -1,5 +1,6 @@
 package com.apostle.services.transactionService;
 
+import com.apostle.controllers.TransactionController;
 import com.apostle.data.model.BankAccount;
 import com.apostle.data.model.Transaction;
 import com.apostle.data.model.TransactionStatus;
@@ -10,6 +11,8 @@ import com.apostle.dtos.requests.SendMoneyRequest;
 import com.apostle.dtos.responses.TransactionResponse;
 import com.apostle.exceptions.TransactionNotFoundException;
 import com.apostle.services.bankService.BankAccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +37,8 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepo;
     private final BankAccountService bankService;
     private static final String SYSTEM_ACCOUNT_ID = "SYSTEM";
+    private static final Logger logger = LoggerFactory.getLogger(TransactionServiceImpl.class);
+
 
 
     @Override
@@ -149,8 +154,6 @@ public class TransactionServiceImpl implements TransactionService {
                 receiverName
         );
     }
-
-
 
     private void validateTransferRequest(SendMoneyRequest request) {
         if (request.senderAccountNumber().equals(request.receiverAccountNumber())) {

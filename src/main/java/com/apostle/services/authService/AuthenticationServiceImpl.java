@@ -6,6 +6,7 @@ import com.apostle.data.model.User;
 import com.apostle.data.repositories.UserRepository;
 import com.apostle.dtos.requests.LoginRequest;
 import com.apostle.dtos.requests.RegisterRequest;
+import com.apostle.dtos.responses.CachedUser;
 import com.apostle.dtos.responses.LoginResponse;
 import com.apostle.dtos.responses.RegisterResponses;
 import com.apostle.exceptions.EmailNotSentException;
@@ -14,17 +15,21 @@ import com.apostle.exceptions.UserAlreadyExistException;
 import com.apostle.services.bankService.BankAccountServiceImpl;
 import com.apostle.services.emailService.EmailServiceImpl;
 import com.apostle.services.jwtService.JwtService;
+import com.apostle.services.redisService.RedisService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.apostle.utils.Mapper.mapToRegisterRequest;
 
@@ -32,6 +37,7 @@ import static com.apostle.utils.Mapper.mapToRegisterRequest;
 @Validated
 @Service("authenticationService")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService{
 
     private final Validator validator;
@@ -40,6 +46,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final JwtService jwtService;
     private final EmailServiceImpl emailService;
     private final BankAccountServiceImpl bankAccountService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String USER_CACHE_PREFIX = "user:";
+    private static final long USER_CACHE_TTL_MINUTES = 5;
 
     @Override
     public RegisterResponses register(RegisterRequest registerRequest) {
@@ -78,20 +88,35 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         String email = loginRequest.getEmail().toLowerCase();
-        Optional<User> optionalUser =  userRepository.findUserByEmail(email);
-        if (optionalUser.isEmpty()){
-            throw new InvalidLoginException("User with provided credential does not exist");
+        String cacheKey = USER_CACHE_PREFIX + email;
+
+        CachedUser cachedUser = (CachedUser) redisTemplate.opsForValue().get(cacheKey);
+        User user = null;
+
+        if (cachedUser != null) {
+            log.info("✅ User fetched from Redis: {}", email);
+            user = userRepository.findUserByEmail(email)
+                    .orElseThrow(() -> new InvalidLoginException("User with provided credential does not exist"));
+        } else {
+            user = userRepository.findUserByEmail(email)
+                    .orElseThrow(() -> new InvalidLoginException("User with provided credential does not exist"));
+
+            CachedUser safeCache = new CachedUser(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUsername(),
+                    user.getRole()
+            );
+
+            redisTemplate.opsForValue().set(cacheKey, safeCache, USER_CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+            log.info("✅ User cached in Redis (without password): {}", safeCache);
         }
 
-        boolean passwordMatches = bCryptPasswordEncoder
-                .matches(loginRequest.getPassword(), optionalUser.get().getPassword());
-        if (!passwordMatches) {
-            throw new InvalidLoginException("Invalid credentials");
-        }
+        boolean passwordMatches = bCryptPasswordEncoder.matches(loginRequest.getPassword(), user.getPassword());
+        if (!passwordMatches) throw new InvalidLoginException("Invalid credentials");
 
-        String name = optionalUser.get().getUsername();
-        User user = optionalUser.get();
-        String token = jwtService.generateJwtToken(optionalUser.get().getEmail(), user.getRole());
-        return new LoginResponse(token, name, "Log in successful", true);
+        String token = jwtService.generateJwtToken(user.getEmail(), user.getRole());
+        return new LoginResponse(token, user.getUsername(), "Log in successful", true);
     }
+
 }
