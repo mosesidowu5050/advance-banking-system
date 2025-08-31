@@ -2,7 +2,9 @@ package com.apostle.services.authService;
 
 import com.apostle.data.model.AccountType;
 import com.apostle.data.model.BankAccount;
+import com.apostle.data.model.RefreshToken;
 import com.apostle.data.model.User;
+import com.apostle.data.repositories.RefreshTokenRepository;
 import com.apostle.data.repositories.UserRepository;
 import com.apostle.dtos.requests.LoginRequest;
 import com.apostle.dtos.requests.RegisterRequest;
@@ -12,10 +14,11 @@ import com.apostle.dtos.responses.RegisterResponses;
 import com.apostle.exceptions.EmailNotSentException;
 import com.apostle.exceptions.InvalidLoginException;
 import com.apostle.exceptions.UserAlreadyExistException;
+import com.apostle.services.RefreshTokenService;
 import com.apostle.services.bankService.BankAccountServiceImpl;
 import com.apostle.services.emailService.EmailServiceImpl;
 import com.apostle.services.jwtService.JwtService;
-import com.apostle.services.redisService.RedisService;
+import com.apostle.utils.RefreshTokenGenerator;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -27,7 +30,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Optional;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final EmailServiceImpl emailService;
     private final BankAccountServiceImpl bankAccountService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RefreshTokenService refreshTokenService;
 
     private static final String USER_CACHE_PREFIX = "user:";
     private static final long USER_CACHE_TTL_MINUTES = 5;
@@ -91,7 +96,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         String cacheKey = USER_CACHE_PREFIX + email;
 
         CachedUser cachedUser = (CachedUser) redisTemplate.opsForValue().get(cacheKey);
-        User user = null;
+        User user;
 
         if (cachedUser != null) {
             log.info("✅ User fetched from Redis: {}", email);
@@ -115,8 +120,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         boolean passwordMatches = bCryptPasswordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if (!passwordMatches) throw new InvalidLoginException("Invalid credentials");
 
-        String token = jwtService.generateJwtToken(user.getEmail(), user.getRole());
-        return new LoginResponse(token, user.getUsername(), "Log in successful", true);
+        String accessToken = jwtService.generateJwtToken(user.getEmail(), user.getRole());
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+        return new LoginResponse(accessToken, refreshToken, user.getUsername(), "Log in successful", true);
     }
 
 }
