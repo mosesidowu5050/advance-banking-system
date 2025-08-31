@@ -56,13 +56,9 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
 
-        if (claims.getExpiration().before(new Date())) {
-            throw new RuntimeException("Token has expired");
-        }
+        if (claims.getExpiration().before(new Date())) throw new RuntimeException("Token has expired");
 
-        if (!"access".equals(claims.get("type", String.class))) {
-            throw new RuntimeException("Invalid token type");
-        }
+        if (!"access".equals(claims.get("type", String.class))) throw new RuntimeException("Invalid token type");
 
         return claims;
     }
