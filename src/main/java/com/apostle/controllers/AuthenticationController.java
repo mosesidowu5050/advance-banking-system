@@ -65,14 +65,15 @@ public class AuthenticationController {
             refreshTokenService.revokeAllRefreshTokensForUser(userId);
 
             String newAccessToken = jwtService.generateJwtToken(userId, role);
-            String newRefreshToken = refreshTokenService.createRefreshToken(userId);
+            String newRefreshToken = refreshTokenService.createRefreshToken(userId, role);
 
             return ResponseEntity.ok(Map.of(
                     "accessToken", newAccessToken,
                     "refreshToken", newRefreshToken
             ));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("Invalid or expired refresh token");
     }
 
 
