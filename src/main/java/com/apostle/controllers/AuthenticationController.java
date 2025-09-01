@@ -91,8 +91,8 @@ public class AuthenticationController {
 
             String userId = jwtService.extractUserId(accessToken);
             refreshTokenService.revokeAllRefreshTokensForUser(userId);
-
         }
+
         return ResponseEntity.ok("Logged out successfully.");
     }
 
