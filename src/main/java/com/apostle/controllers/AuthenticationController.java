@@ -58,24 +58,14 @@ public class AuthenticationController {
 
 
     @PostMapping("/token-refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
-        String refreshToken = refreshTokenRequest.getRefreshToken();
-
-        if (refreshTokenService.validateRefreshToken(refreshToken)) {
-            String userId = refreshTokenService.getUserIdFromRefreshToken(refreshToken);
-            Role role = refreshTokenService.getRoleFromRefreshToken(refreshToken);
-            refreshTokenService.revokeAllRefreshTokensForUser(userId);
-
-            String newAccessToken = jwtService.generateJwtToken(userId, role);
-            String newRefreshToken = refreshTokenService.createRefreshToken(userId, role);
-
-            return ResponseEntity.ok(Map.of(
-                    "accessToken", newAccessToken,
-                    "refreshToken", newRefreshToken
-            ));
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
+        try {
+            return ResponseEntity.ok(refreshTokenService
+                    .refreshAccessToken(request.getRefreshToken()));
+        } catch (Exception e) {
+            log.error("Error refreshing token: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid or expired refresh token");
     }
 
 

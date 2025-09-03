@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -97,4 +98,24 @@ public class RefreshTokenService {
                 .map(RefreshToken::getRole)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
     }
+
+
+    public Map<String, String> refreshAccessToken(String refreshToken) {
+        if (!validateRefreshToken(refreshToken)) throw new InvalidLoginException("Invalid or expired refresh token");
+
+        String userId = getUserIdFromRefreshToken(refreshToken);
+        Role role = getRoleFromRefreshToken(refreshToken);
+        revokeAllRefreshTokensForUser(userId);
+
+        String newAccessToken = jwtService.generateJwtToken(userId, role);
+        String newRefreshToken = createRefreshToken(userId, role);
+        long ttl = jwtService.getRemainingValidity(newAccessToken);
+        redisService.addTokenForUser(userId, newAccessToken, ttl);
+
+        return Map.of(
+                "accessToken", newAccessToken,
+                "refreshToken", newRefreshToken
+        );
+    }
+
 }

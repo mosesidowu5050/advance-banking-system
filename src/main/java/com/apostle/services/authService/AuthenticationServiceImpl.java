@@ -121,6 +121,9 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         String accessToken = jwtService.generateJwtToken(user.getEmail(), user.getRole());
         String refreshToken = refreshTokenService.createRefreshToken(user.getId(), user.getRole());
 
+        long ttl = jwtService.getRemainingValidity(accessToken);
+        redisService.addTokenForUser(user.getId(), accessToken, ttl);
+
         return new LoginResponse(accessToken, refreshToken, user.getUsername(), "Log in successful", true);
     }
 
