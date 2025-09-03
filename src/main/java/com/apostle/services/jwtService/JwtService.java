@@ -29,6 +29,7 @@ public class JwtService {
         this.tokenBlacklistService = tokenBlacklistService;
     }
 
+
     public String generateJwtToken(String email, Role role){
         return Jwts.builder()
                 .setSubject(email)
