@@ -34,13 +34,26 @@ public class RedisService {
         }
 
         public void blacklistToken(String token, long ttlSeconds) {
-            String key = "blacklist:" + token;
-            redisTemplate.opsForValue().set(key, "revoked", java.time.Duration.ofSeconds(ttlSeconds));
+        redisTemplate.opsForValue().set(token, "blacklisted", ttlSeconds, TimeUnit.SECONDS);
         }
 
         public void removeUserActiveTokens(String userId) {
             String key = "user:" + userId + ":tokens";
             redisTemplate.delete(key);
         }
+
+    public void cacheRefreshToken(String userId, String hashedToken, long ttlSeconds) {
+        String key = "refreshToken:" + userId;
+        redisTemplate.opsForValue().set(key, hashedToken, ttlSeconds, TimeUnit.SECONDS);
+    }
+
+    public String getCachedRefreshToken(String userId) {
+        String key = "refreshToken:" + userId;
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public void deleteCachedRefreshToken(String userId) {
+        redisTemplate.opsForValue().getOperations().delete("refreshToken:" + userId);
+    }
 
 }

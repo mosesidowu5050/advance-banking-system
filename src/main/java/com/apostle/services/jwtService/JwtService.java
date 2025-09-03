@@ -72,4 +72,9 @@ public class JwtService {
         Claims claims = extractAllClaims(accessToken);
         return claims.getSubject();
     }
+
+    public long getRemainingValidity(String accessToken) {
+        Claims claims = extractAllClaims(accessToken);
+        return claims.getExpiration().getTime() - System.currentTimeMillis();
+    }
 }

@@ -37,13 +37,15 @@ public class RefreshTokenService {
         refreshToken.setRevoked(false);
         refreshToken.setRole(userRole);
         refreshToken.setToken(hashedToken);
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshExpiration)); // 7 days
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshExpiration));
 
         refreshTokenRepository.save(refreshToken);
 
+        long ttlSeconds = refreshExpiration / 1000;
+        redisService.cacheRefreshToken(userId, hashedToken, ttlSeconds);
+
         return rawToken;
     }
-
 
     public boolean validateRefreshToken(String token) {
         String hashedToken = RefreshTokenGenerator.hashToken(token);
@@ -59,15 +61,15 @@ public class RefreshTokenService {
 
 
     public void revokeAllRefreshTokensForUser(String userId) {
-        List<String> activeTokens = redisService.getTokensForUser(userId);
-        for (String token : activeTokens) {
-            long expiration = jwtService.getExpiration(token);
-            long now = System.currentTimeMillis() / 1000;
-            long ttl = expiration - now;
-            redisService.blacklistToken(token, ttl);
+        List<RefreshToken> tokens = refreshTokenRepository.findAllByUserId(userId);
+        for (RefreshToken token : tokens) {
+            token.setRevoked(true);
+            refreshTokenRepository.save(token);
         }
-        redisService.removeUserActiveTokens(userId);
+
+        redisService.deleteCachedRefreshToken(userId);
     }
+
 
 
     public void revokeAllAccessTokensForUser(String userId) {

@@ -127,14 +127,16 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     @Override
     public void logout(String accessToken) {
-            long expiration = jwtService.getExpiration(accessToken);
-            long now = System.currentTimeMillis() / 1000;
-            long ttl = expiration - now;
-            redisService.blacklistToken(accessToken, ttl);
+        String userId = jwtService.extractUserId(accessToken);
 
-            String userId = jwtService.extractUserId(accessToken);
-            refreshTokenService.revokeAllRefreshTokensForUser(userId);
-            refreshTokenService.revokeAllAccessTokensForUser(userId);
+        long ttl = jwtService.getRemainingValidity(accessToken);
+        redisService.blacklistToken(accessToken, ttl);
+        log.info("Access token blacklisted for userId={}", userId);
+
+        refreshTokenService.revokeAllRefreshTokensForUser(userId);
+        refreshTokenService.revokeAllAccessTokensForUser(userId);
+        log.info("All tokens revoked for userId={}", userId);
     }
+
 
 }
