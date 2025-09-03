@@ -47,7 +47,6 @@ public class RefreshTokenService {
 
     public boolean validateRefreshToken(String token) {
         String hashedToken = RefreshTokenGenerator.hashToken(token);
-
         RefreshToken refreshToken = refreshTokenRepository.findByToken(hashedToken)
                 .orElseThrow(() -> new InvalidLoginException("Invalid refresh token"));
 
@@ -71,9 +70,20 @@ public class RefreshTokenService {
     }
 
 
+    public void revokeAllAccessTokensForUser(String userId) {
+        List<String> activeToken = redisService.getTokensForUser(userId);
+        for (String token : activeToken) {
+            long expiration = jwtService.getExpiration(token);
+            long now = System.currentTimeMillis() / 1000;
+            long ttl = expiration - now;
+            redisService.blacklistToken(token, ttl);
+        }
+        redisService.removeUserActiveTokens(userId);
+    }
+
+
     public String getUserIdFromRefreshToken(String refreshToken) {
         String hashedToken = RefreshTokenGenerator.hashToken(refreshToken);
-
         return refreshTokenRepository.findByToken(hashedToken)
                 .map(RefreshToken::getUserId)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
@@ -81,7 +91,6 @@ public class RefreshTokenService {
 
     public Role getRoleFromRefreshToken(String refreshToken) {
         String hashedToken = RefreshTokenGenerator.hashToken(refreshToken);
-
         return refreshTokenRepository.findByToken(hashedToken)
                 .map(RefreshToken::getRole)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));

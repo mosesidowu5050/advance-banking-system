@@ -79,24 +79,12 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
-
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String accessToken = authHeader.substring(7);
-
-            long expiration = jwtService.getExpiration(accessToken);
-            long now = System.currentTimeMillis() / 1000;
-            long ttl = expiration - now;
-
-            redisService.blacklistToken(accessToken, ttl);
-
-            String userId = jwtService.extractUserId(accessToken);
-            refreshTokenService.revokeAllRefreshTokensForUser(userId);
+            authenticationService.logout(accessToken);
         }
-
         return ResponseEntity.ok("Logged out successfully.");
     }
-
-
 
 }

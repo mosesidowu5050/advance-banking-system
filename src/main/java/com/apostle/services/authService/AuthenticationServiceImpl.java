@@ -12,6 +12,7 @@ import com.apostle.dtos.responses.RegisterResponses;
 import com.apostle.exceptions.EmailNotSentException;
 import com.apostle.exceptions.InvalidLoginException;
 import com.apostle.exceptions.UserAlreadyExistException;
+import com.apostle.services.redisService.RedisService;
 import com.apostle.services.refreshService.RefreshTokenService;
 import com.apostle.services.bankService.BankAccountServiceImpl;
 import com.apostle.services.emailService.EmailServiceImpl;
@@ -27,6 +28,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final BankAccountServiceImpl bankAccountService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RefreshTokenService refreshTokenService;
+    private final RedisService redisService;
 
     private static final String USER_CACHE_PREFIX = "user:";
     private static final long USER_CACHE_TTL_MINUTES = 5;
@@ -119,6 +122,19 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         String refreshToken = refreshTokenService.createRefreshToken(user.getId(), user.getRole());
 
         return new LoginResponse(accessToken, refreshToken, user.getUsername(), "Log in successful", true);
+    }
+
+
+    @Override
+    public void logout(String accessToken) {
+            long expiration = jwtService.getExpiration(accessToken);
+            long now = System.currentTimeMillis() / 1000;
+            long ttl = expiration - now;
+            redisService.blacklistToken(accessToken, ttl);
+
+            String userId = jwtService.extractUserId(accessToken);
+            refreshTokenService.revokeAllRefreshTokensForUser(userId);
+            refreshTokenService.revokeAllAccessTokensForUser(userId);
     }
 
 }

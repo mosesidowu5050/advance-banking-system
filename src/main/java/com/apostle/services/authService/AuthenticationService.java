@@ -8,4 +8,6 @@ import com.apostle.dtos.responses.RegisterResponses;
 public interface AuthenticationService {
     RegisterResponses register(RegisterRequest registerRequest);
     LoginResponse login(LoginRequest loginRequest);
+
+    void logout(String accessToken);
 }
