@@ -72,9 +72,8 @@ public class AuthenticationController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.badRequest().body("Missing or invalid Authorization header");
-        }
 
         String accessToken = authHeader.substring(7);
         authenticationService.logout(accessToken);

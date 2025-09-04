@@ -9,6 +9,7 @@ import com.apostle.services.redisService.RedisService;
 import com.apostle.utils.RefreshTokenGenerator;
 import com.google.common.hash.Hashing;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
@@ -111,6 +113,7 @@ public class RefreshTokenService {
         String newRefreshToken = createRefreshToken(userId, role);
         long ttl = jwtService.getRemainingValidity(newAccessToken);
         redisService.addTokenForUser(userId, newAccessToken, ttl);
+        log.info("New access token generated and cached into redis for userId={}", userId);
 
         return Map.of(
                 "accessToken", newAccessToken,

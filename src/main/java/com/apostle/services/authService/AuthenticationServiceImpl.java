@@ -123,8 +123,13 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         long ttl = jwtService.getRemainingValidity(accessToken);
         redisService.addTokenForUser(user.getId(), accessToken, ttl);
+        log.info("🆕 New access token generated and cached into redis for userId={}", user.getId());
 
-        return new LoginResponse(accessToken, refreshToken, user.getUsername(), "Log in successful", true);
+        return new LoginResponse(
+                accessToken,
+                refreshToken,
+                user.getUsername(),
+                "Log in successful", true);
     }
 
 
@@ -134,11 +139,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         long ttl = jwtService.getRemainingValidity(accessToken);
         redisService.blacklistToken(accessToken, ttl);
-        log.info("Access token blacklisted for userId={}", userId);
+        log.info("🆑 Access token blacklisted for userId={}", userId);
 
         refreshTokenService.revokeAllRefreshTokensForUser(userId);
         refreshTokenService.revokeAllAccessTokensForUser(userId);
-        log.info("All tokens revoked for userId={}", userId);
+        log.info("🆑 All tokens revoked for userId={}", userId);
     }
 
 
